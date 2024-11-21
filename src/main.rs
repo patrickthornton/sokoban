@@ -37,6 +37,7 @@ const PLAYER_INDEX: usize = 0;
 
 // constants for the autosolver
 const MAX_MOVES: usize = 150;
+const MAX_ITERS: usize = 5000000;
 const SOLVER_STRUCTURE_SIZE: usize = 1024 * 1024;
 const SOLUTION_DISPLAY_SPEED: u64 = 60;
 
@@ -294,7 +295,11 @@ impl State {
 
     /// backtracking solver for state; the interesting part of this program,
     /// programming-wise. never uses undo or reset, so starts from current state
-    fn solve(state: &State, max_moves: usize) -> Option<(Vec<Vec<Bunny>>, SolveStats)> {
+    fn solve(
+        state: &State,
+        max_moves: usize,
+        max_iters: usize,
+    ) -> Option<(Vec<Vec<Bunny>>, SolveStats)> {
         // storage of previous states
         let mut states: Vec<Vec<Bunny>> = Vec::with_capacity(SOLVER_STRUCTURE_SIZE);
         let mut visited: HashMap<Vec<Bunny>, usize> = HashMap::with_capacity(SOLVER_STRUCTURE_SIZE);
@@ -320,6 +325,10 @@ impl State {
                 break;
             }
 
+            // iters check
+            if iters == max_iters {
+                break;
+            }
             // depth check
             if depths[&new_index] == max_moves {
                 continue;
@@ -482,7 +491,7 @@ fn main() -> Result<()> {
             }
             // solve
             Key::Char('s') => {
-                let soln = match State::solve(&state, MAX_MOVES) {
+                let soln = match State::solve(&state, MAX_MOVES, MAX_ITERS) {
                     Some(soln) => soln,
                     None => {
                         writeln!(stdout, "the bunny couldn't do it from here.\r")?;
